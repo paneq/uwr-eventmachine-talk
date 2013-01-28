@@ -11,6 +11,28 @@ class ChatServer < EM::Connection
     Connections.delete(self)
   end
 
+  def receive_data(data)
+   @lt2_delimiter = "\n"
+   @lt2_linebuffer ||= []
+
+   if ix = data.index( @lt2_delimiter )
+      @lt2_linebuffer << data[0...ix]
+      ln = @lt2_linebuffer.join
+      @lt2_linebuffer.clear
+      if @lt2_delimiter == "\n"
+        ln.chomp!
+      end
+      receive_line ln
+      receive_data data[(ix+@lt2_delimiter.length)..-1]
+    else
+      @lt2_linebuffer << data
+    end
+  end
+
+  def receive_line(line)
+    send_data("Did you just say, quote: '#{line}'\n")
+  end
+
   def notify_about_connections(size)
     send_data( number_of_connections(size) )
   end
