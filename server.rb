@@ -36,7 +36,16 @@ class ChatServer < EM::Connection
 
 end
 
-EventMachine.run do
+EM.run do
+
+  trap("INT") do
+    EM.stop
+  end
+
+  trap("TERM") do
+    EM.stop
+  end
+
   timer = EM.add_periodic_timer(10) do
     Connections.each do |c|
       c.notify_about_connections(Connections.size)
