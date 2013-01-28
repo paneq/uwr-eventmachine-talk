@@ -30,7 +30,14 @@ class ChatServer < EM::Connection
   end
 
   def receive_line(line)
-    send_data("Did you just say, quote: '#{line}'\n")
+    Connections.each do |c|
+      next if c == self
+      c.notify_about_line(line)
+    end
+  end
+
+  def notify_about_line(line)
+    send_data("Someone says, quote: '#{line}'\n")
   end
 
   def notify_about_connections(size)
@@ -45,12 +52,12 @@ class ChatServer < EM::Connection
 
 end
 
-EventMachine.run {
-  timer = EM.add_periodic_timer(5) do
+EventMachine.run do
+  timer = EM.add_periodic_timer(10) do
     Connections.each do |c|
       c.notify_about_connections(Connections.size)
     end
   end
 
   EventMachine.start_server "127.0.0.1", 8000, ChatServer
-}
+end
