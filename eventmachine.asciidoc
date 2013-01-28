@@ -1,0 +1,276 @@
+Event Machine for fun, not for production
+=========================================
+:author:    Robert Pankowecki
+:copyright: Robert Pankowecki
+:backend:   slidy
+:max-width: 45em
+:data-uri:
+:icons:
+:language: ruby
+:pygments:
+
+
+Robert Pankowecki ???
+---------------------
+
+image:/home/rupert/Dropbox/Photos/rupy2.jpg[]
+
+* @pankowecki
+* robert.pankowecki.pl
+
+Problem
+-------
+
+* highly concurrent
+* distributed
+* fault tolerant
+* applications
+
+Produkcja?
+----------
+
+* Nie polecam!
+* Trudno debugować
+* Każdy gem musi być async
+* Bugi
+* Callbacks vs Fibers
+* Mała społeczność
+** Z każdym krokiem mniejsza
+** Więc fixuj samemu
+
+Fun ?
+-----
+
+* Wysokopoziomowe programowanie asynchroniczne
+* Znajomy język
+* Proof of concepts
+
+start_server
+------------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+require 'eventmachine'
+
+class ChatServer < EM::Connection
+end
+
+EventMachine.run {
+  EventMachine.start_server "127.0.0.1", 8000, EchoServer
+}
+---------------------------------------------------------------------------------
+
+post_init
+---------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+require 'eventmachine'
+
+class ChatServer < EM::Connection
+  def post_init
+    puts "Ktoś się podłączył"
+  end
+end
+---------------------------------------------------------------------------------
+
+
+unbind
+------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+class ChatServer < EM::Connection
+  def unbind
+    puts "Disconnected"
+  end
+end
+---------------------------------------------------------------------------------
+
+send_data
+---------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+require 'eventmachine'
+
+class ChatServer < EM::Connection
+  def post_init
+    send_data "Witamy w Chat serverze"
+  end
+end
+---------------------------------------------------------------------------------
+
+add_timer
+---------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+require 'eventmachine'
+
+class ChatServer < EM::Connection
+  def post_init
+    @timer = EM.add_timer(10) do
+      send_data("Jest godzina: #{Time.now}")
+    end
+  end
+
+  def unbind
+    EM.cancel_timer(@timer)
+  end
+end
+---------------------------------------------------------------------------------
+
+add_periodic_timer
+------------------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+class ChatServer < EM::Connection
+  def post_init
+    @timer = EM.add_periodic_timer(10) do
+      send_data("Jest godzina: #{Time.now}")
+    end
+  end
+
+  def unbind
+    EM.cancel_timer(@timer)
+  end
+end
+---------------------------------------------------------------------------------
+
+
+receive_data
+------------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+class ChatServer < EM::Connection
+  def receive_data(data)
+    send_data("Did you just say, quote: '#{data}'")
+  end
+end
+---------------------------------------------------------------------------------
+
+line_text
+---------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+class ChatServer < EM::Connection
+  include EventMachine::Protocols::LineText2
+
+  def receive_line(line)
+    send_data("Did you just say, quote: '#{line}'")
+  end
+end
+---------------------------------------------------------------------------------
+
+connect
+-------
+
+[source,ruby]
+---------------------------------------------------------------------------------
+EM.connect("localhost", 8080, Connection)
+---------------------------------------------------------------------------------
+
+Zadanie dla chętnych
+--------------------
+
+* Napisz serwer oraz klientów, którzy rozgrywają grę w kółko i krzyżyk
+* Server
+** Odbiera dane od klientów
+** Weryfikuje je pod względem poprawności
+** Trzyma stan partii
+** Nadaje ruchy przeciwnika
+** Ogłasza wynik
+** Dobiera losowo graczy (połączenia), które grają jedną partię
+** Wszystko trzyma w pamięci, brak bazy danych
+* Klient
+** Podłącza się
+** Dostaje info, czy jest kółkiem czy krzyżykiem (co implikuje czy jego ruch, czy też czeka na ruch przeciwnika)
+** Wykonuje (sensowne, bądź nie) ruchy
+* Protokół
+** JSON oddzielony znakami nowej linii
+** {"type":"move", "field":"8"}
+
+Zadanie dla jeszcze chętniejszych
+---------------------------------
+
+* Zaimplementuj analogiczne rozwiązanie (albo tylko klienta bądź tylko server) z użyciem Celluloid
+* Zaimplementuj rozwiązanie z użyciem bibliotek z Ruby
+* Sprawdź jak te różne rozwiązania technologiczne ze sobą rozmawiają :)
+
+Do czytania
+-----------
+
+* https://gist.github.com/105bbe060d18033ee114
+
+## Problem
+
+* highly concurrent
+* distributed
+* fault tolerant
+* applications
+
+
+## Discussion
+
+* http://www.kegel.com/c10k.html
+* http://www.mailinator.com/tymaPaulMultithreaded.pdf
+* http://www.slideshare.net/KyleDrake/hybrid-concurrency-patterns
+
+## EM
+
+* http://eventmachine.rubyforge.org/EventMachine.html
+* https://github.com/igrigorik/em-websocket
+* http://code.macournoyer.com/thin/
+* https://github.com/eventmachine/evma_httpserver
+* https://github.com/postrank-labs/goliath
+* https://github.com/npj/sse-goliath
+* http://dev.af83.com/2011/08/03/em-eventsource-an-eventmachine-client-for-server-sent-events.html
+* http://www.igvita.com/2008/05/27/ruby-eventmachine-the-speed-demon/
+
+## Celluloid
+
+* https://github.com/celluloid/celluloid/
+* https://github.com/celluloid/celluloid-io
+* http://railscasts.com/episodes/367-celluloid
+* https://github.com/tarcieri/nio4r
+* https://gist.github.com/1953904 (proof of concept rozproszonego chat serveru)
+
+## Evented
+
+* http://www.aosabook.org/en/nginx.html
+* http://nodejs.org/
+* https://netty.io/
+
+## Threads
+
+* http://blog.carbonfive.com/2011/10/11/a-modern-guide-to-threads/
+* http://www.slideshare.net/mperham/actors-and-threads
+
+## One thread ? :)
+
+* http://martinfowler.com/articles/lmax.html
+* http://www.infoq.com/presentations/LMAX-Disruptor-100K-TPS-at-Less-than-1ms-Latency
+* http://www.infoq.com/presentations/click-crash-course-modern-hardware
+* http://www.lighterra.com/papers/modernmicroprocessors/
+
+## Actors
+
+* http://akka.io/
+
+## One more thing
+
+* http://www.youtube.com/watch?v=RcfT3b79UYM
+* http://zguide.zeromq.org/page:all
+
+## Low-level
+
+* http://en.wikipedia.org/wiki/Native_POSIX_Thread_Library
+* http://en.wikipedia.org/wiki/Epoll
+* http://en.wikipedia.org/wiki/Kqueue
+* http://en.wikipedia.org/wiki/Select_(Unix)
+* http://software.schmorp.de/pkg/libev.html
+* http://libevent.org/
