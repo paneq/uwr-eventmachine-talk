@@ -52,5 +52,5 @@ EM.run do
     end
   end
 
-  EventMachine.start_server "127.0.0.1", 8000, ChatServer
+  EM.start_server "127.0.0.1", 8000, ChatServer
 end
