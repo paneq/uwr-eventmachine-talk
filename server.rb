@@ -1,9 +1,17 @@
 require 'eventmachine'
 
+Connections = []
+
 class ChatServer < EM::Connection
   def post_init
-    puts "Someone connected"
+    Connections << self
+    puts "# of connections: #{Connections.size}"
   end
+
+  def unbind
+    Connections.delete(self)
+  end
+
 end
 
 EventMachine.run {
