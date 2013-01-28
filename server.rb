@@ -1,6 +1,9 @@
 require 'eventmachine'
 
 class ChatServer < EM::Connection
+  def post_init
+    puts "Someone connected"
+  end
 end
 
 EventMachine.run {
