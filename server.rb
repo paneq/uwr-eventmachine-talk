@@ -6,7 +6,7 @@ class ChatServer < EM::Connection
   def post_init
     Connections << self
     send_data(number_of_connections)
-    @timer = EM.add_timer(10) do
+    @timer = EM.add_periodic_timer(5) do
       send_data(number_of_connections)
     end
   end
