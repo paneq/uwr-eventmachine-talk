@@ -5,7 +5,7 @@ Connections = []
 class ChatServer < EM::Connection
   def post_init
     Connections << self
-    puts "# of connections: #{Connections.size}"
+    send_data "# of connections: #{Connections.size}\n"
   end
 
   def unbind
