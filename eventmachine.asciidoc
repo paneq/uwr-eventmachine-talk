@@ -197,7 +197,7 @@ Zadanie dla chętnych
 Zadanie dla jeszcze chętniejszych
 ---------------------------------
 
-* Zaimplementuj analogiczne rozwiązanie (albo tylko klienta bądź tylko server) z użyciem Celluloid
+* Zaimplementuj analogiczne rozwiązanie (albo tylko klienta bądź tylko server) z użyciem Celluloid IO
 * Zaimplementuj rozwiązanie z użyciem bibliotek z Ruby
 * Sprawdź jak te różne rozwiązania technologiczne ze sobą rozmawiają :)
 
@@ -233,8 +233,8 @@ Do czytania
 
 ## Celluloid
 
-* https://github.com/celluloid/celluloid/
 * https://github.com/celluloid/celluloid-io
+* https://github.com/celluloid/celluloid/
 * http://railscasts.com/episodes/367-celluloid
 * https://github.com/tarcieri/nio4r
 * https://gist.github.com/1953904 (proof of concept rozproszonego chat serveru)
